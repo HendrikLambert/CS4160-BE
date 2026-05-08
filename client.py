@@ -15,7 +15,7 @@ from ipv8.configuration import (
 from ipv8.lazy_community import Peer, lazy_wrapper
 from ipv8.messaging.lazy_payload import VariablePayload, vp_compile
 from ipv8_service import IPv8
-from miner import DIFFICULTY_BITS, mine
+from miner import DEFAULT_DIFFICULTY_BITS, mine
 
 COMMUNITY_ID = bytes.fromhex("2c1cc6e35ff484f99ebdfb6108477783c0102881")
 SERVER_PUBKEY = bytes.fromhex(
@@ -189,6 +189,12 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help="Mine the PoW and exit without contacting the server",
     )
+    p.add_argument(
+        "--difficulty",
+        type=int,
+        default=DEFAULT_DIFFICULTY_BITS,
+        help=f"PoW difficulty (default: {DEFAULT_DIFFICULTY_BITS} bits)",
+    )
     return p.parse_args()
 
 
@@ -213,9 +219,11 @@ def main() -> int:
         print(err)
         return 1
 
-    print(f"Mining PoW (difficulty: {DIFFICULTY_BITS} bits)")
+    print(f"Mining PoW (difficulty: {args.difficulty} bits)")
     time_start = time.time()
-    nonce, digest_hex = mine(args.email, args.github_url, args.workers, args.gpu)
+    nonce, digest_hex = mine(
+        args.email, args.github_url, args.workers, args.gpu, args.difficulty
+    )
     time_elapsed = time.time() - time_start
     print(f"Found nonce={nonce}  hash={digest_hex}  in {time_elapsed:.1f}s")
 
